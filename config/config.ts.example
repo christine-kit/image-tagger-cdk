@@ -1,0 +1,28 @@
+interface StageConfigData {
+    stage: string;
+    account: string;
+    region: string;
+    domain?: string;
+    certARN?: string;
+}
+
+export const stageConfig: StageConfigData[] = [
+    {
+        stage: 'stage name',
+        account: 'account id', 
+        region: 'us-east-1',
+        
+        // deploy cdk once to generate the cloudfront distribution, then manually create a cert for your custom domain and add it here
+        // you will also need to manually configure the CNAME for your DNS
+        // domain: 'app.example.com',
+        // certARN: 'arn:aws:acm:us-east-1:accountid:certificate/certificateid'
+    },
+]
+
+// github repo info for automatic deployment of frontend
+// if you just want to build and upload the frontend manually you can just leave this dummy text here
+// otherwise, fork the frontend and set up github actions for automatic build/deploy
+export const frontendConfig = {
+    repo: 'github-repo-name',
+    owner: 'github-repo-owner',
+}
