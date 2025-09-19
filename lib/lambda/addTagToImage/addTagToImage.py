@@ -1,6 +1,7 @@
 import json
 import boto3
 import os
+from datetime import datetime, timezone
 
 table_name = os.environ["TABLE_NAME"]
 dynamodb = boto3.resource('dynamodb')
@@ -40,6 +41,7 @@ def lambda_handler(event, context):
         }
     image_id = body['image_id']
     tag_id = body['tag_id']
+    created_at = datetime.now(timezone.utc).isoformat(timespec='seconds')
 
     try:
         validate_item_exists(image_id)
@@ -53,7 +55,8 @@ def lambda_handler(event, context):
     tag_image_obj = {
         'primary_id': image_id,
         'secondary_id': tag_id,
-        'item_type': 'relation'
+        'item_type': 'relation',
+        'created_at': created_at
     }
 
     try:

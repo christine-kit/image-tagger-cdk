@@ -44,6 +44,11 @@ export const lambdaConfig: LambdaConfig[] = [
         method: apigatewayv2.HttpMethod.GET,
     },
     {
+        name: "getAllTags",
+        perms: "READ",
+        method: apigatewayv2.HttpMethod.GET,
+    },
+    {
         name: "queryImagesByTag",
         perms: "READ",
         method: apigatewayv2.HttpMethod.GET,

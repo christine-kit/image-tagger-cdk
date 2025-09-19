@@ -50,7 +50,8 @@ def lambda_handler(event, context):
         'image_name': str(body.get('image_name')),
         'description': str(body.get('description')),
         'item_type': 'image',
-        'created_at': created_at
+        'created_at': created_at,
+        'tag_count': 0
     }
 
     try:

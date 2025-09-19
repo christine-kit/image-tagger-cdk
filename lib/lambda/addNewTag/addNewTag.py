@@ -3,6 +3,7 @@ import boto3
 from boto3.dynamodb.conditions import Key
 from urllib.parse import urlparse
 import os
+from datetime import datetime, timezone
 
 TAG_TYPES = ['general', 'character', 'source', "artist"]
 
@@ -44,14 +45,16 @@ def lambda_handler(event, context):
     tag_name = body['tag_name'].lower()
     
     id = ''.join(tag_name.split())
-    
+    created_at = datetime.now(timezone.utc).isoformat(timespec='seconds')
+
     tag_obj = {
         'tag_name': tag_name,
         'primary_id': id,
         'secondary_id': id,
         'tag_type': body['tag_type'],
         'description': body.get('description', ''),
-        'item_type': 'tag'
+        'item_type': 'tag',
+        'created_at': created_at
     }
 
     if tag_obj['tag_type'] == 'artist':
