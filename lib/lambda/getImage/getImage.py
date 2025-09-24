@@ -1,6 +1,7 @@
 import json
 import boto3
 import os
+from decimal import Decimal
 
 table_name = os.environ["TABLE_NAME"]
 dynamodb = boto3.resource('dynamodb')
@@ -18,6 +19,8 @@ json object containing image data
     'url': string,
     'image_name': string,
     'description': string,
+    'tag_count': int,
+    'created_at': string, (UTC ISO format yyyy-mm-ddThh:mm:ss+|–hh:mm)
 }
 """
 def lambda_handler(event, context):
@@ -38,5 +41,12 @@ def lambda_handler(event, context):
     
     return {
         'statusCode': 200,
-        'body': json.dumps(imageData)
+        'body': json.dumps(imageData, cls=DecimalEncoder)
     }
+
+# encode number as int for tag_count attribute
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return int(obj)
+        return json.JSONEncoder.default(self, obj)

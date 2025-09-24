@@ -2,8 +2,8 @@ import * as apigatewayv2 from 'aws-cdk-lib/aws-apigatewayv2';
 
 export interface LambdaConfig {
     name: string;
-    perms: string;
-    method: apigatewayv2.HttpMethod;
+    perms: string; // dynamodb permissions
+    method?: apigatewayv2.HttpMethod;
 }
 
 // lambda-stack.ts will look for a python file in lib/lambda/functionName/functionName.py
@@ -62,5 +62,19 @@ export const lambdaConfig: LambdaConfig[] = [
         name: "removeTagFromImage",
         perms: "WRITE",
         method: apigatewayv2.HttpMethod.DELETE,
-    }
+    },
+    {
+        name: "getUntaggedImages",
+        perms: "READ",
+        method: apigatewayv2.HttpMethod.GET,
+    },
+    {
+        name: "updateUntaggedCount",
+        perms: "READWRITE",
+    },
+    {
+        name: "getUntaggedCount",
+        perms: "READ",
+        method: apigatewayv2.HttpMethod.GET,
+    },
 ]

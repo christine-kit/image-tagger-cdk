@@ -26,13 +26,13 @@ export class ImageTaggerDBStack extends cdk.Stack {
             writeCapacity: 2,
         });
 
-        // GSI for time based lookups
+        // GSI for time based lookups and other scans/filters on item type
         this.table.addGlobalSecondaryIndex({
-            indexName: 'created_at_index',
+            indexName: 'item_type_index',
             partitionKey: { name: 'item_type', type: dynamodb.AttributeType.STRING },
             sortKey: { name: 'created_at', type: dynamodb.AttributeType.STRING },
             projectionType: dynamodb.ProjectionType.INCLUDE, 
-            nonKeyAttributes: ['primary_id'],
+            nonKeyAttributes: ['primary_id', 'tag_count'],
             readCapacity: 2,   
             writeCapacity: 2,
         });

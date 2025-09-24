@@ -7,14 +7,18 @@ import { stageConfig } from '../config/config'
 const app = new cdk.App();
 
 for (const stageData of stageConfig) {
-  new ImageTaggerAppStack(app, 'ImageTaggerAppStack', {
+  new ImageTaggerAppStack(app, `ImageTaggerAppStack-${stageData.stage}`, {
+    stage: stageData.stage,
     env: {
       account: stageData.account,
       region: stageData.region,
     },
   });
 
-  new FrontendStack(app, 'ImageTaggerFrontendStack', {
+  if (!stageData.frontend) {
+    continue;
+  }
+  new FrontendStack(app, `ImageTaggerFrontendStack-${stageData.stage}`, {
     stage: stageData.stage,
     env: {
       account: stageData.account,

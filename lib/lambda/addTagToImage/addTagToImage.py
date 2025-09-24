@@ -2,10 +2,12 @@ import json
 import boto3
 import os
 from datetime import datetime, timezone
+from botocore.exceptions import ClientError
 
 table_name = os.environ["TABLE_NAME"]
 dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table(table_name)
+client = boto3.client('dynamodb')
 
 """
 Input: JSON object of form 
@@ -16,13 +18,12 @@ Input: JSON object of form
 
 Behavior:
 inserts an entry into the db with primary_id = image_id and secondary_id = tag_id
-does not need to check if entry already exists because the entry only consists
-of primary_id and secondary_id, so no changes will be made if overwritten
+increments tag_count on image if a new relation is added
 
 Response:
 http response with status of request
 200 if image-tag addition was successful
-400 if input error
+400 if input error or if relation already exists
 """
 def lambda_handler(event, context):
     try:
@@ -43,6 +44,7 @@ def lambda_handler(event, context):
     tag_id = body['tag_id']
     created_at = datetime.now(timezone.utc).isoformat(timespec='seconds')
 
+    # check if image and tag exist before creating relation
     try:
         validate_item_exists(image_id)
         validate_item_exists(tag_id)
@@ -52,28 +54,67 @@ def lambda_handler(event, context):
             'body': json.dumps(str(e))
         }  
 
-    tag_image_obj = {
-        'primary_id': image_id,
-        'secondary_id': tag_id,
-        'item_type': 'relation',
-        'created_at': created_at
+    relation_item = {
+        'primary_id': {'S': image_id},
+        'secondary_id': {'S': tag_id},
+        'item_type': {'S': 'relation'},
+        'created_at': {'S': created_at}
     }
 
     try:
-        table.put_item(
-            Item=tag_image_obj
+        response = client.transact_write_items(
+            TransactItems = [
+                # increment tag count for image
+                {
+                    'Update': {
+                        'TableName': table_name,
+                        'Key': {
+                            'primary_id': {'S': image_id},
+                            'secondary_id': {'S': image_id}
+                        },
+                        'UpdateExpression': 'ADD tag_count :inc',
+                        'ExpressionAttributeValues': {
+                            ':inc': {'N': '1'}
+                        }
+                    }
+                },
+                # add relation if relation does not already exist
+                {
+                    'Put': {
+                        'TableName': table_name,
+                        'Item': relation_item,
+                        'ConditionExpression': 'attribute_not_exists(primary_id) OR attribute_not_exists(secondary_id)'
+                    }
+                }
+            ]
         )
-    except Exception as err:
-        print('Unexpected error while putting item in db:', err)
-        return {
-            'statusCode': 500,
-            'body': json.dumps('Unexpected error while putting image-tag object in db')
-        }    
+    except ClientError as err:
+        if err.response['Error']['Code'] == 'TransactionCanceledException':
+            reasons = err.response['CancellationReasons']
+            if reasons[1]['Code'] == 'ConditionalCheckFailed':
+                return {
+                    'statusCode': 400,
+                    'body': f'Relation between {image_id} and {tag_id} already exists'
+                } 
+            
+            # transaction failed for unknown reason
+            print('ERROR: Add relation transaction cancelled.')
+            print('Reasons:', reasons)
+            return {
+                'statusCode': 500,
+                'body': 'Transaction was cancelled'
+            } 
+        else:
+            print('ERROR: Unexpected error when adding relation:', str(err))
+            return {
+                'statusCode': 500,
+                'body': json.dumps('Unexpected error while putting image-tag relation in db')
+            }    
     
     # success
     return {
         'statusCode': 200,
-        'body': json.dumps('New image-tag object created successfully')
+        'body': json.dumps('New image-tag relation created successfully')
     }
 
 def validate_item_exists(id):

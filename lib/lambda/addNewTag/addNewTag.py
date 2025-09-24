@@ -42,6 +42,9 @@ def lambda_handler(event, context):
             'statusCode': 400,
             'body': json.dumps(f'invalid tag_type, must be one of {TAG_TYPES}')
         }
+    
+    # tag names are forced to be lowercase to avoid using the same name
+    # as metadata items which are all caps
     tag_name = body['tag_name'].lower()
     
     id = ''.join(tag_name.split())
