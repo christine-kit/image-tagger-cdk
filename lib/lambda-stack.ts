@@ -63,15 +63,15 @@ export class LambdaStack extends cdk.Stack {
       // add route for lambda if method is defined
       // if method is undefined, the lambda will not be able to be called publicly by the api
       if (configVal.method === undefined) {
-        continue
+        continue;
       }
       httpAPI.addRoutes({
         path: `/${name}`,
         methods: [configVal.method],
         integration: new integrations.HttpLambdaIntegration(
-          `${configVal.name}Integration`, lambdaFn
+          `${name}Integration`, lambdaFn
         )
-      })
+      });
     }
   }
 }

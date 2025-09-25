@@ -7,6 +7,7 @@ import { ImageTaggerDBStack} from '../lib/image-tagger-db-stack';
 
 interface AppStackProps extends cdk.StackProps {
     stage: string;
+    corsOrigin?: string;
 }
 
 export class ImageTaggerAppStack extends cdk.Stack {
@@ -18,6 +19,14 @@ export class ImageTaggerAppStack extends cdk.Stack {
     const httpAPI = new apigatewayv2.HttpApi(this, `ImageTaggerAPI-${props.stage}`, {
       apiName: `ImageTaggerAPI-${props.stage}`,
       createDefaultStage: true,
+      // if origin is defined in config, configure CORS to allow access to api
+      ...(props.corsOrigin && {
+        corsPreflight: {
+          allowOrigins: [props.corsOrigin],
+          allowMethods: [apigatewayv2.CorsHttpMethod.ANY],
+          allowHeaders: ['*'],
+        },
+      }),
     });
 
     new cdk.CfnOutput(this, `${id} API endpoint`, {

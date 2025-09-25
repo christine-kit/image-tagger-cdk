@@ -2,8 +2,10 @@ interface StageConfigData {
     stage: string;
     account: string;
     region: string;
+    corsOrigin?: string;
     domain?: string;
     certARN?: string;
+    frontend: boolean; // generate bucket and distribution to host frontend
 }
 
 export const stageConfig: StageConfigData[] = [
@@ -14,8 +16,10 @@ export const stageConfig: StageConfigData[] = [
         
         // deploy cdk once to generate the cloudfront distribution, then manually create a cert for your custom domain and add it here
         // you will also need to manually configure the CNAME for your DNS
+        // corsOrigin?: 'https://app.example.com',
         // domain: 'app.example.com',
         // certARN: 'arn:aws:acm:us-east-1:accountid:certificate/certificateid'
+        frontend: false;
     },
 ]
 

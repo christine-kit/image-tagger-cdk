@@ -13,6 +13,7 @@ for (const stageData of stageConfig) {
       account: stageData.account,
       region: stageData.region,
     },
+    corsOrigin: stageData.corsOrigin,
   });
 
   if (!stageData.frontend) {
