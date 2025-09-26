@@ -11,11 +11,7 @@ table = dynamodb.Table(table_name)
 Input: http GET request
 
 Response:
-list of images (JSON) with the form
-[
-    "primary_id": "image id",
-    ...
-]
+list of image ids (JSON)
 """
 def lambda_handler(event, context):
     response = table.query(
@@ -25,6 +21,7 @@ def lambda_handler(event, context):
         IndexName='item_type_index'
     )
     items = response.get('Items', [])
+    items = [item['primary_id'] for item in items]
     return {
         'statusCode': 200,
         'body': json.dumps(items)
