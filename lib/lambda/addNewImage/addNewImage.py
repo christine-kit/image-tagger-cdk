@@ -47,8 +47,8 @@ def lambda_handler(event, context):
         'primary_id': id,
         'secondary_id': id,
         'url': body['url'],
-        'image_name': str(body.get('image_name')),
-        'description': str(body.get('description')),
+        'image_name': str(body.get('image_name', '')),
+        'description': str(body.get('description', '')),
         'item_type': 'image',
         'created_at': created_at,
         'tag_count': 0

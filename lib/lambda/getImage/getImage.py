@@ -36,8 +36,6 @@ def lambda_handler(event, context):
         )
         if 'Item' in response:
             imageData.append(response['Item'])
-        else:
-            imageData.append({})
     
     return {
         'statusCode': 200,
